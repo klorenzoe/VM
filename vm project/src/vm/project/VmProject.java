@@ -18,6 +18,8 @@ public class VmProject
    public static void main(String[] args)
    {
       // TODO code application logic here
+      Interphase frame = new Interphase();
+      frame.setVisible(true);
    }
    
 }
