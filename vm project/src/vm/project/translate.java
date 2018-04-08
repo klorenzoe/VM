@@ -171,15 +171,70 @@ public class translate
                   "M=!M";
        break;
           default:
-            result= "ERRORRRRRRRRRRRRRRRRRRRRRRRRRR";
+            result= "ARROR ARITHMETIC";
              break;
        }
-       return "";
+       return result;
     }
     
     private String MemoryAccess(String[] parts)
     {
-       return "";
+       String result="";
+       
+       switch(parts[0]){
+          case "push":
+             switch(parts[1]){
+                case "constant":
+                   result= "@"+parts[2]+" \n"+
+                           "D=A";
+                   break;
+                case "temp":
+                   result = "@"+parts[2]+" \n"+
+                           "D=M";
+                   break;
+                case "pointer":
+                   result = "@"+parts[2] +" \n"+
+                           "D=A \n"+
+                           "@THIS \n"+
+                           "A=A+D \n"+
+                           "D=M";
+                   break;
+                case "this":
+                   result = "@"+parts[2]+" \n"+
+                           "D=A \n"+
+                           "@THIS \n"+
+                           "A=M+D \n"+
+                           "D=M";
+                   break;
+                case "that":
+                   result = "@"+parts[2]+" \n"+
+                           "D=A \n"+
+                           "@THAT \n"+
+                           "A=M+D \n"+
+                           "D=M";
+                           
+                   break;
+                case "argument":
+                   result="@ARG";
+                   break;
+                case "local":
+                   result = "D=M \n"+
+                           "@" + parts[2] +" \n"+
+                           "A=D+A \n"+
+                           "D=M";
+                   break;
+                case "static":
+                   result = "@" + parts[2] + "." + parts[3] + "\nD=M\n";
+                   break;
+                default:
+                   result = "ERROR MEMORY ACCESS";
+                   break;
+             }
+            break;
+          case "pop":
+             break;
+       }
+       return result;
     }
     
     private String Flow(String[] parts)
