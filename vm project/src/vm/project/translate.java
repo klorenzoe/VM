@@ -85,7 +85,7 @@ public class translate
                   "AM=M-1 \n"+
                   "D=M \n"+
                   "A=A-1 \n"+
-                  "M=M+D";
+                  "M=D+M";
        break;
        case "sub":
           result=
@@ -198,92 +198,110 @@ public class translate
                 case "constant":
                    result= "@"+parts[2]+" \n"+
                            "D=A \n"+
-                           "@SP \n"+
-                           "A=M \n"+
-                           "M=D \n"+
-                           "@SP \n"+
-                           "M=M+1";
+                           pushStatements();
                    break;
                 case "temp":
-                   result = "@"+parts[2]+" \n"+
-                           "D=M";
+                   int i = Integer.parseInt(parts[2]);
+                   result = "@"+(i+5)+" \n"+
+                           "D=M"+
+                           pushStatements();
                    break;
                 case "pointer":
-                   result = "@"+parts[2] +" \n"+
+                   String var = "THAT";
+                   if(parts[2].equals("0")){ var = "THIS";}
+                   
+               /*    result = "@"+parts[2] +" \n"+
                            "D=A \n"+
-                           "@THIS \n"+
+                           "@"+var+" \n"+
                            "A=A+D \n"+
-                           "D=M";
+                           "D=M";*/
+                     result= "@"+var+" \n"+
+                             "D=M \n"+
+                             pushStatements();
                    break;
                 case "this":
                    result = "@"+parts[2]+" \n"+
                            "D=A \n"+
                            "@THIS \n"+
-                           "A=M+D \n"+
+                           "A=D+M \n"+
                            "D=M";
                    break;
                 case "that":
                    result = "@"+parts[2]+" \n"+
                            "D=A \n"+
                            "@THAT \n"+
-                           "A=M+D \n"+
+                           "A=D+M \n"+
                            "D=M";
                            
                    break;
                 case "argument":
-                   result="@ARG";
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+
+                           "@ARG \n"+
+                           "A=D+M \n"+
+                           "D=M";
+                           
                    break;
                 case "local":
-                   result = "D=M \n"+
-                           "@" + parts[2] +" \n"+
-                           "A=D+A \n"+
+                   result ="@"+parts[2]+" \n"+
+                           "D=A \n"+
+                           "@ARG \n"+
+                           "A=D+M \n"+
                            "D=M";
                    break;
                 case "static":
-                   result = "@" + parts[2] + "." + parts[3] + "\nD=M\n";
+                   result = "@" + parts[2]+"\n"+
+                           "D=M \n"+
+                           pushStatements();
                    break;
                 default:
-                   result = "ERROR MEMORY ACCESS";
+                   result = "ERROR MEMORY ACCESS PUSH";
                    break;
              }
             break;
           case "pop":
              switch(parts[1]){
                 case "temp":
-                   result="@"+(parts[2]+5);
+                   result="@"+(parts[2]+5)+
+                           popStatements();
                    break;
                 case "pointer":
-                   result= "@THIS \n";
-                   int i = Integer.parseInt(parts[2]);
-                   while(i-- > 0){
-                      result+="A=A+1 \n";
-                   }
-                   result = result.substring(0, result.length()-2);
+                   String var = "THAT";
+                   if(parts[2].equals("0")){var = "THIS";}
+                   result= "@"+var+" \n"+
+                           popStatements();
                    break;
                 case "that":
-                   result="@THAT";
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+  //guardamos el dato en D
+                           "@THAT \n"+
+                           "A=D+M \n"+ //sumamos el dato con lo que posee that y lo guardamos en A como direccion
+                           popStatements();
                    break;
                 case "this":
-                   result="@THIS";
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+  //guardamos el dato en D
+                           "@THIS \n"+
+                           "A=D+M \n"+ //sumamos el dato con lo que posee that y lo guardamos en A
+                           popStatements();
                    break;
                 case "argument":
-                   result="@ARG";
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+  //guardamos el dato en D
+                           "@ARG \n"+
+                           "A=D+M \n"+ //sumamos el dato con lo que posee ARG y lo guardamos en A
+                           popStatements();
                    break;
                 case "local":
-                   result="@LCL \n"+
-                           "D=M \n"+
-                           "@"+parts[2]+"\n"+
-                           "D=D+A \n"+
-                           "M=D \n"+
-                           "@SP \n"+
-                           "AM=M-1 \n"+
-                           "D=M \n"+
-                           "@R15 \n"+
-                           "A=M \n"+
-                           "M=D";
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+  //guardamos el dato en D
+                           "@LCL \n"+
+                           "A=D+M \n"+ //sumamos el dato con lo que posee LCL y lo guardamos en A
+                           popStatements();
                    break;
                 case "static":
-                   result= "@"+parts[2]+"."+parts[3];
+                   result= "@"+parts[2]+" \n"+ //obtenemos la nueva posición al que ira el dato pop
+                           popStatements(); //le hacemos pop
                    break;
                 default:
                    result ="ERROR EN POP MEMORY ACCESS";
@@ -302,6 +320,7 @@ public class translate
           case "labels":
              break;
           case "if-goto":
+             
              break;
           case "goto":
              break;
@@ -321,5 +340,35 @@ public class translate
              break;
        }
        return result;
+    }
+    
+    //repetitive statements
+    private String pushStatements(){
+       return "@SP \n"+ 
+               "A=M \n"+ //guardo la direccion SP en A
+               "M=D \n"+//meto el dato en m[a] (sp)
+               "@SP \n"+
+               "M=M+1"; //ahora sp se corre a la siguiente posición disponible
+    }
+    
+    private String popStatements(){
+       return saveDataPopNewAddress()+"\n@SP \n"+
+               "A=M \n"+ //guardo la posición de SP en A
+               "D=M \n"+ //D va a tomar el valor del dato en SP
+               "@SP \n"+ 
+               "M=M-1 \n" + //SP se corre una posición anterior
+               savePopDataOtherStack(); //almacenamos el dato hecho pop en la posición que nos indicaron hacerlo (por eso la guardamos en el temporal)
+    }
+    
+    private String saveDataPopNewAddress(){ //guardo la posición que me dicen que s para guardar el dato hecho pop
+       return "D=A \n"+ //la posición en que se almacenara el dato hecho pop
+               "@temp \n"+
+               "M=D"; //lo guardamos en la temporal
+    }
+    
+    private String savePopDataOtherStack(){
+         return "@temp \n"+  //vamos a buscar el dato que hay en la temporal
+                 "A=M \n"+ //El dato que hay en m, se vuelve una dirección
+                 "M=D"; //almacenamos en esa dirección
     }
 }
