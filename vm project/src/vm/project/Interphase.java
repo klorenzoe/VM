@@ -5,7 +5,10 @@
  */
 package vm.project;
 
+import java.io.File;
+import java.io.PrintWriter;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -14,7 +17,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class Interphase extends javax.swing.JFrame
 {
-   String vmCode = "";
+   translate vmCode;
+   String fileName="";
 
    /**
     * Creates new form Interphase
@@ -34,26 +38,27 @@ public class Interphase extends javax.swing.JFrame
    private void initComponents()
    {
 
-      jScrollPane1 = new javax.swing.JScrollPane();
-      txtCode = new javax.swing.JTextArea();
-      jLabel3 = new javax.swing.JLabel();
+      jPanel1 = new javax.swing.JPanel();
+      jScrollPane2 = new javax.swing.JScrollPane();
+      txtHack = new javax.swing.JTextArea();
       btnImport = new javax.swing.JButton();
       jLabel1 = new javax.swing.JLabel();
-      jScrollPane2 = new javax.swing.JScrollPane();
-      txtAssembler = new javax.swing.JTextArea();
       btnExport = new javax.swing.JButton();
+      jLabel3 = new javax.swing.JLabel();
+      jScrollPane1 = new javax.swing.JScrollPane();
+      txtVm = new javax.swing.JTextArea();
 
       setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+      setBackground(new java.awt.Color(204, 204, 204));
 
-      txtCode.setColumns(20);
-      txtCode.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-      txtCode.setRows(5);
-      txtCode.setDisabledTextColor(new java.awt.Color(0, 0, 153));
-      txtCode.setEnabled(false);
-      jScrollPane1.setViewportView(txtCode);
+      jPanel1.setBackground(new java.awt.Color(0, 102, 153));
 
-      jLabel3.setFont(new java.awt.Font("Yu Gothic UI Semilight", 1, 18)); // NOI18N
-      jLabel3.setText("Virtual machine code");
+      txtHack.setColumns(20);
+      txtHack.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
+      txtHack.setRows(5);
+      txtHack.setDisabledTextColor(new java.awt.Color(0, 0, 153));
+      txtHack.setEnabled(false);
+      jScrollPane2.setViewportView(txtHack);
 
       btnImport.setFont(new java.awt.Font("Times New Roman", 0, 13)); // NOI18N
       btnImport.setText("Import");
@@ -66,14 +71,8 @@ public class Interphase extends javax.swing.JFrame
       });
 
       jLabel1.setFont(new java.awt.Font("Yu Gothic UI Semilight", 1, 18)); // NOI18N
+      jLabel1.setForeground(new java.awt.Color(255, 255, 255));
       jLabel1.setText("Hack code");
-
-      txtAssembler.setColumns(20);
-      txtAssembler.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
-      txtAssembler.setRows(5);
-      txtAssembler.setDisabledTextColor(new java.awt.Color(0, 0, 153));
-      txtAssembler.setEnabled(false);
-      jScrollPane2.setViewportView(txtAssembler);
 
       btnExport.setFont(new java.awt.Font("Times New Roman", 0, 13)); // NOI18N
       btnExport.setText("Export");
@@ -85,46 +84,68 @@ public class Interphase extends javax.swing.JFrame
          }
       });
 
-      javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-      getContentPane().setLayout(layout);
-      layout.setHorizontalGroup(
-         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      jLabel3.setFont(new java.awt.Font("Yu Gothic UI Semilight", 1, 18)); // NOI18N
+      jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+      jLabel3.setText("Virtual machine code");
+
+      txtVm.setColumns(20);
+      txtVm.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
+      txtVm.setRows(5);
+      txtVm.setDisabledTextColor(new java.awt.Color(0, 0, 153));
+      txtVm.setEnabled(false);
+      jScrollPane1.setViewportView(txtVm);
+
+      javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+      jPanel1.setLayout(jPanel1Layout);
+      jPanel1Layout.setHorizontalGroup(
+         jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGap(0, 1466, Short.MAX_VALUE)
-         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                .addGap(155, 155, 155)
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                  .addGroup(layout.createSequentialGroup()
+               .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                  .addGroup(jPanel1Layout.createSequentialGroup()
                      .addComponent(jLabel3)
                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                      .addComponent(btnImport))
                   .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 449, javax.swing.GroupLayout.PREFERRED_SIZE))
                .addGap(258, 258, 258)
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                  .addGroup(layout.createSequentialGroup()
+               .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                  .addGroup(jPanel1Layout.createSequentialGroup()
                      .addComponent(jLabel1)
                      .addGap(289, 289, 289)
                      .addComponent(btnExport))
                   .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 449, javax.swing.GroupLayout.PREFERRED_SIZE))
-               .addContainerGap(155, Short.MAX_VALUE)))
+               .addContainerGap(172, Short.MAX_VALUE)))
       );
-      layout.setVerticalGroup(
-         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      jPanel1Layout.setVerticalGroup(
+         jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
          .addGap(0, 791, Short.MAX_VALUE)
-         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                .addGap(104, 104, 104)
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+               .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
-                  .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                  .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                      .addComponent(jLabel1)
                      .addComponent(btnExport)
                      .addComponent(btnImport)))
                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+               .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                   .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
                   .addComponent(jScrollPane2))
-               .addContainerGap(105, Short.MAX_VALUE)))
+               .addContainerGap(42, Short.MAX_VALUE)))
+      );
+
+      javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+      getContentPane().setLayout(layout);
+      layout.setHorizontalGroup(
+         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      );
+      layout.setVerticalGroup(
+         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
       );
 
       pack();
@@ -137,41 +158,42 @@ public class Interphase extends javax.swing.JFrame
       {
          //front-end
          JFileChooser chooser = new JFileChooser();
-         chooser.setFileFilter(new FileNameExtensionFilter("*.txt", "txt","*.asm","asm"));
+         chooser.setFileFilter(new FileNameExtensionFilter("*.vm","vm"));
          chooser.setAcceptAllFileFilterUsed(false);
 
-         chooser.setCurrentDirectory(new java.io.File(".//..//..//archi_project//nand2tetris//projects//06"));
+         chooser.setCurrentDirectory(new java.io.File(".//..//..//archi_project//nand2tetris//projects//07"));
          chooser.showOpenDialog(chooser);
 
-         //back-end
-         vmCode = new translate(chooser.getSelectedFile().getAbsolutePath());
+         String path = chooser.getSelectedFile().getAbsolutePath();
+         fileName = path.replace("\\", "!").split("!")[path.replace("\\", "!").split("!").length-1];
 
-         //front-end
-         txtCode.setText(code.codeContent);
+            //back-end
+            vmCode = new translate(path);
 
-         //back-end abd front-end
-         FillTxts();
+            //front-end
+            txtVm.setText(vmCode.vmCodeContent);
 
-      }catch(Exception e)
-      {
+            txtHack.setText(vmCode.translateToHack());
 
-      }
+         }catch(Exception e)
+         {
 
+         }
    }//GEN-LAST:event_btnImportActionPerformed
 
    private void btnExportActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_btnExportActionPerformed
    {//GEN-HEADEREND:event_btnExportActionPerformed
       // TODO add your handling code here:
-      if(!txtAssembler.getText().isEmpty())
+      if(!txtHack.getText().isEmpty())
       {
          int count =1;
          File export;
          JFileChooser chooser = new JFileChooser();
          chooser.setCurrentDirectory(new java.io.File("."));
-         chooser.setDialogTitle("Choose a location to save this assembler");
+         chooser.setDialogTitle("Choose a location to save this Hack");
          chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          chooser.setAcceptAllFileFilterUsed(false);
-         String name = "\\Assembler.hack";
+         String name = "\\"+fileName+".asm";
          //
          try
          {
@@ -179,15 +201,15 @@ public class Interphase extends javax.swing.JFrame
             {
                if((export = new File(chooser.getCurrentDirectory()+name)).exists())
                {
-                  name = "\\Assembler("+count+").hack";
+                  name = "\\"+fileName+"("+count+").asm";
                   while((export = new File(chooser.getCurrentDirectory()+name)).exists())
                   {
                      count++;
-                     name = "\\Assembler("+count+").hack";
+                     name = "\\"+fileName+"("+count+").asm";
                   }
                }
                PrintWriter writer = new PrintWriter(export, "UTF-8");
-               String[] lines = txtAssembler.getText().split("\n");
+               String[] lines = txtHack.getText().split("\n");
                for (int i = 0; i < lines.length; i++)
                {
                   writer.println(lines[i]);
@@ -198,9 +220,9 @@ public class Interphase extends javax.swing.JFrame
          }catch(Exception e)
          {
          }
-
-      }
    }//GEN-LAST:event_btnExportActionPerformed
+
+   }// </editor-fold>                        
 
    /**
     * @param args the command line arguments
@@ -256,9 +278,10 @@ public class Interphase extends javax.swing.JFrame
    private javax.swing.JButton btnImport;
    private javax.swing.JLabel jLabel1;
    private javax.swing.JLabel jLabel3;
+   private javax.swing.JPanel jPanel1;
    private javax.swing.JScrollPane jScrollPane1;
    private javax.swing.JScrollPane jScrollPane2;
-   private javax.swing.JTextArea txtAssembler;
-   private javax.swing.JTextArea txtCode;
+   private javax.swing.JTextArea txtHack;
+   private javax.swing.JTextArea txtVm;
    // End of variables declaration//GEN-END:variables
 }

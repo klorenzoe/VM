@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.LinkedList;
+import jdk.nashorn.internal.parser.TokenType;
 
 /**
  *
@@ -57,8 +58,18 @@ public class translate
        
        String line;
          while ((line = codeFile.readLine()) != null){
-            vmCode.add(line.trim());
-            vmCodeContent=line.trim()+"\n";
+            if(line.contains("//")){
+               String noComents = line.split("//")[0];
+               if(!noComents.isEmpty()){
+                  vmCode.add(line.split("//")[0].trim());
+                  vmCodeContent+=line.split("//")[0].trim()+"\n";
+               }
+            }else{
+               if(!line.isEmpty()){
+                  vmCode.add(line.trim());
+               }
+            }
+            vmCodeContent+=line.trim()+"\n";
          }
        codeFile.close();
     }
@@ -98,17 +109,17 @@ public class translate
                   "A=A-1 \n"+
                   "D=D-M \n"+
                   "@EQUALSLABEL \n"+
-                  "D;JGE \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=-1 \n"+
-                  "@ENDLABELS \n"+
-                  "0;JMP \n"+
-                  "(EQUALSLABEL) \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=0 \n"+
-                  "(ENDLABELS)";
+                  "D;JGE \n";
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=-1 \n"+
+//                  "@ENDLABELS \n"+
+//                  "0;JMP \n"+
+//                  "(EQUALSLABEL) \n"+
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=0 \n"+
+//                  "(ENDLABELS)";
        break;
         case "eq":
           result=
@@ -118,17 +129,17 @@ public class translate
                   "A=A-1 \n"+
                   "D=D-M \n"+
                   "@EQUALSLABEL \n"+
-                  "D;JNE \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=-1 \n"+
-                  "@ENDLABELS \n"+
-                  "0;JMP \n"+
-                  "(EQUALSLABEL) \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=0 \n"+
-                  "(ENDLABELS)";
+                  "D;JNE \n";
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=-1 \n"+
+//                  "@ENDLABELS \n"+
+//                  "0;JMP \n"+
+//                  "(EQUALSLABEL) \n"+
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=0 \n"+
+//                  "(ENDLABELS)";
        break;
        case "lt":
           result= "@SP \n"+
@@ -137,17 +148,17 @@ public class translate
                   "A=A-1 \n"+
                   "D=D-M \n"+
                   "@EQUALSLABELS \n"+
-                  "D;JLE \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=-1 \n"+
-                  "@ENDLABELS \n"+
-                  "0;JMP \n" +
-                  "(EQUALSLABELS) \n"+
-                  "@SP \n"+
-                  "A=M-1 \n"+
-                  "M=0 \n "+
-                  "(ENDLABELS)";
+                  "D;JLE \n";
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=-1 \n"+
+//                  "@ENDLABELS \n"+
+//                  "0;JMP \n" +
+//                  "(EQUALSLABELS) \n"+
+//                  "@SP \n"+
+//                  "A=M-1 \n"+
+//                  "M=0 \n "+
+//                  "(ENDLABELS)";
        break;
        case "and":
           result = "@SP \n"+
@@ -186,7 +197,12 @@ public class translate
              switch(parts[1]){
                 case "constant":
                    result= "@"+parts[2]+" \n"+
-                           "D=A";
+                           "D=A \n"+
+                           "@SP \n"+
+                           "A=M \n"+
+                           "M=D \n"+
+                           "@SP \n"+
+                           "M=M+1";
                    break;
                 case "temp":
                    result = "@"+parts[2]+" \n"+
@@ -232,6 +248,47 @@ public class translate
              }
             break;
           case "pop":
+             switch(parts[1]){
+                case "temp":
+                   result="@"+(parts[2]+5);
+                   break;
+                case "pointer":
+                   result= "@THIS \n";
+                   int i = Integer.parseInt(parts[2]);
+                   while(i-- > 0){
+                      result+="A=A+1 \n";
+                   }
+                   result = result.substring(0, result.length()-2);
+                   break;
+                case "that":
+                   result="@THAT";
+                   break;
+                case "this":
+                   result="@THIS";
+                   break;
+                case "argument":
+                   result="@ARG";
+                   break;
+                case "local":
+                   result="@LCL \n"+
+                           "D=M \n"+
+                           "@"+parts[2]+"\n"+
+                           "D=D+A \n"+
+                           "M=D \n"+
+                           "@SP \n"+
+                           "AM=M-1 \n"+
+                           "D=M \n"+
+                           "@R15 \n"+
+                           "A=M \n"+
+                           "M=D";
+                   break;
+                case "static":
+                   result= "@"+parts[2]+"."+parts[3];
+                   break;
+                default:
+                   result ="ERROR EN POP MEMORY ACCESS";
+                   break;
+             }
              break;
        }
        return result;
@@ -239,11 +296,30 @@ public class translate
     
     private String Flow(String[] parts)
     {
-       return "";
+       String result="";
+       
+       switch(parts[0]){
+          case "labels":
+             break;
+          case "if-goto":
+             break;
+          case "goto":
+             break;
+       }
+       return  result;
     }
     
     private String Calls(String[] parts)
     {
-       return "";
+       String result="";
+       switch(parts[0]){
+          case "function":
+             break;
+          case "call":
+             break;
+          case "return":
+             break;
+       }
+       return result;
     }
 }
