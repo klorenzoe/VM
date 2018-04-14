@@ -76,7 +76,7 @@ public class Interphase extends javax.swing.JFrame
 
       jLabel1.setFont(new java.awt.Font("Yu Gothic UI Semilight", 1, 18)); // NOI18N
       jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-      jLabel1.setText("Hack code");
+      jLabel1.setText("Assembler");
 
       btnExport.setFont(new java.awt.Font("Times New Roman", 0, 13)); // NOI18N
       btnExport.setText("Export");
@@ -90,7 +90,7 @@ public class Interphase extends javax.swing.JFrame
 
       jLabel3.setFont(new java.awt.Font("Yu Gothic UI Semilight", 1, 18)); // NOI18N
       jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-      jLabel3.setText("Virtual machine code");
+      jLabel3.setText("Jack code");
 
       txtVm.setColumns(20);
       txtVm.setFont(new java.awt.Font("Consolas", 0, 14)); // NOI18N
@@ -177,7 +177,7 @@ public class Interphase extends javax.swing.JFrame
             //front-end
             txtVm.setText(vmCode.vmCodeContent);
 
-            txtHack.setText(vmCode.translateToHack());
+            txtHack.setText(vmCode.translateToHack().replace("\n\n", "\n"));
 
          }catch(Exception e)
          {
@@ -225,7 +225,6 @@ public class Interphase extends javax.swing.JFrame
          {
          }
    }//GEN-LAST:event_btnExportActionPerformed
-
    }// </editor-fold>                        
 
    /**

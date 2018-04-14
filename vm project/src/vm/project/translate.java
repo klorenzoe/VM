@@ -8,6 +8,7 @@ package vm.project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.lang.invoke.MethodHandles;
 import java.util.LinkedList;
 import jdk.nashorn.internal.parser.TokenType;
 
@@ -19,6 +20,7 @@ public class translate
 {
    public String vmCodeContent ="";
    private LinkedList<String> vmCode = new LinkedList<String>();
+   int n;
    
    public translate(String path){
       try{
@@ -28,6 +30,7 @@ public class translate
    }
    
    public String translateToHack(){
+      n=0;
       String result="";
       for (int i = 0; i < vmCode.size(); i++)
       {
@@ -49,7 +52,7 @@ public class translate
          }
          result+="\n";
       }
-      return result;
+      return addInit()+ result;
    }
     private void ReadVmCode(String fileName)throws  Exception{
       
@@ -102,63 +105,64 @@ public class translate
                   "M=-M";
        break;
        case "gt":
-          result=
-                  "@SP \n"+
-                  "AM=M-1 \n"+
-                  "D=M \n"+
-                  "A=A-1 \n"+
-                  "D=D-M \n"+
-                  "@EQUALSLABEL \n"+
-                  "D;JGE \n";
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=-1 \n"+
-//                  "@ENDLABELS \n"+
-//                  "0;JMP \n"+
-//                  "(EQUALSLABEL) \n"+
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=0 \n"+
-//                  "(ENDLABELS)";
-       break;
+          result="@SP\n" +
+                  "AM = M - 1\n" +
+                  "D = M\n" +
+                  "A = A - 1\n" +
+                  "MD = D-M\n" +
+                  "@LABEL_TRUE"+n+"\n" +
+                  "D;JLT\n" +
+                  "@LABEL_FALSE"+n+"\n" +
+                  "0;JMP\n" +
+                  "(LABEL_TRUE"+n+")\n" +
+                  "@SP\n" +
+                  "A= M-1\n" +
+                  "M = -1\n" +
+                  "@OUT"+n+"\n" +
+                  "0;JMP\n" +
+                  "(LABEL_FALSE"+n+")\n" +
+                  "@SP\n" +
+                  "A= M-1\n" +
+                  "M = 0\n" +
+                  "(OUT"+n+")";
+          n++;
         case "eq":
           result=
                   "@SP \n"+
                   "AM=M-1 \n"+
                   "D=M \n"+
                   "A=A-1 \n"+
-                  "D=D-M \n"+
-                  "@EQUALSLABEL \n"+
-                  "D;JNE \n";
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=-1 \n"+
-//                  "@ENDLABELS \n"+
-//                  "0;JMP \n"+
-//                  "(EQUALSLABEL) \n"+
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=0 \n"+
-//                  "(ENDLABELS)";
+                  "MD=D-M \n"+
+                  "@LABEL_TRUE"+n+" \n"+ 
+                  "D;JEQ \n"+ //if true, it jumps and does not execute the following code
+                  "@SP \n"+ //if false, executes the following code.
+                  "A=M-1 \n"+
+                  "M=-1 \n"+
+                  "(LABEL_TRUE"+n+")";
+          n++;
        break;
        case "lt":
-          result= "@SP \n"+
-                  "AM=M-1 \n"+
-                  "D=M \n"+
-                  "A=A-1 \n"+
-                  "D=D-M \n"+
-                  "@EQUALSLABELS \n"+
-                  "D;JLE \n";
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=-1 \n"+
-//                  "@ENDLABELS \n"+
-//                  "0;JMP \n" +
-//                  "(EQUALSLABELS) \n"+
-//                  "@SP \n"+
-//                  "A=M-1 \n"+
-//                  "M=0 \n "+
-//                  "(ENDLABELS)";
+          result= "@SP\n" +
+                  "AM = M - 1\n" +
+                  "D = M\n" +
+                  "A = A - 1\n" +
+                  "MD = D-M\n" +
+                  "@LABEL_TRUE"+n+"\n" +
+                  "D;JLT\n" +
+                  "@LABEL_FALSE"+n+"\n" +
+                  "0;JMP\n" +
+                  "(LABEL_TRUE"+n+")\n" +
+                  "@SP\n" +
+                  "A= M-1\n" +
+                  "M = -1\n" +
+                  "@OUT"+n+"\n" +
+                  "0;JMP\n" +
+                  "(LABEL_FALSE"+n+")\n" +
+                  "@SP\n" +
+                  "A= M-1\n" +
+                  "M = 0\n" +
+                  "(OUT"+n+")";
+          n++;
        break;
        case "and":
           result = "@SP \n"+
@@ -191,7 +195,7 @@ public class translate
     private String MemoryAccess(String[] parts)
     {
        String result="";
-       
+       int temp = 0;
        switch(parts[0]){
           case "push":
              switch(parts[1]){
@@ -201,15 +205,24 @@ public class translate
                            pushStatements();
                    break;
                 case "temp":
-                   int i = Integer.parseInt(parts[2]);
-                   result = "@"+(i+5)+" \n"+
-                           "D=M"+
-                           pushStatements();
+                   try{
+                      int i = Integer.parseInt(parts[2]);
+                      result = "@"+(i+5)+" \n"+
+                               "D=M"+
+                               pushStatements();
+                   }
+                   catch(Exception e){
+                      result = "@5 \n"+
+                              "D=A \n"+
+                              "@"+parts[2]+" \n"+
+                              "M=D+M \n"+
+                              "D=M \n"+
+                               pushStatements();
+                   }
                    break;
                 case "pointer":
-                   String var = "THAT";
+                   String var = "THAT"; 
                    if(parts[2].equals("0")){ var = "THIS";}
-                   
                /*    result = "@"+parts[2] +" \n"+
                            "D=A \n"+
                            "@"+var+" \n"+
@@ -224,35 +237,56 @@ public class translate
                            "D=A \n"+
                            "@THIS \n"+
                            "A=D+M \n"+
-                           "D=M";
+                           "D=M \n"+
+                           pushStatements();
                    break;
-                case "that":
+                case "that": 
                    result = "@"+parts[2]+" \n"+
                            "D=A \n"+
                            "@THAT \n"+
                            "A=D+M \n"+
-                           "D=M";
+                           "D=M \n"+
+                           pushStatements();
                            
                    break;
-                case "argument":
+                case "argument": 
                    result="@"+parts[2]+" \n"+
                            "D=A \n"+
                            "@ARG \n"+
                            "A=D+M \n"+
-                           "D=M";
+                           "D=M \n"+
+                           pushStatements();
                            
                    break;
                 case "local":
-                   result ="@"+parts[2]+" \n"+
-                           "D=A \n"+
-                           "@ARG \n"+
-                           "A=D+M \n"+
-                           "D=M";
+                   try{
+                   int a = Integer.parseInt(parts[2]);
+                   result ="@LCL \n"+
+                           "D=M \n"+
+                           "@"+a+"\n"+
+                           "A=D+A \n"+
+                           "D=M \n";
+                   }catch(Exception e){
+                   result ="@LCL \n"+
+                           "D=M \n"+
+                           "@"+parts[2]+" \n"+
+                           "A=M+D \n"+
+                           "D=M";}
                    break;
                 case "static":
-                   result = "@" + parts[2]+"\n"+
+                   try{
+                      int b = Integer.parseInt(parts[2]);
+                      result = "@" + (16 + b)+"\n"+
                            "D=M \n"+
                            pushStatements();
+
+                   }
+                   catch(Exception e)
+                   {
+                         result = "@" + parts[2]+"\n"+
+                           "D=M \n"+
+                           pushStatements();
+                   }     
                    break;
                 default:
                    result = "ERROR MEMORY ACCESS PUSH";
@@ -262,46 +296,88 @@ public class translate
           case "pop":
              switch(parts[1]){
                 case "temp":
-                   result="@"+(parts[2]+5)+
-                           popStatements();
+                   result = "@SP \n" +
+                            "AM=M-1 \n" +
+                            "D=M \n" +
+                            "@("+(5+Integer.parseInt(parts[2]))+")\n" +
+                            "M = D";
+//                   }
                    break;
                 case "pointer":
-                   String var = "THAT";
-                   if(parts[2].equals("0")){var = "THIS";}
-                   result= "@"+var+" \n"+
-                           popStatements();
+                   String var = "THIS";
+                   if(parts[2].equals("0")){var = "THAT";}
+                   result = "@SP\n" +
+                              "AM = M - 1 \n" +
+                              "D = M \n" +
+                              "@"+var+" \n" +
+                              "A = M \n" +
+                              "M = D";
                    break;
                 case "that":
                    result="@"+parts[2]+" \n"+
                            "D=A \n"+  //guardamos el dato en D
                            "@THAT \n"+
-                           "A=D+M \n"+ //sumamos el dato con lo que posee that y lo guardamos en A como direccion
-                           popStatements();
-                   break;
+                           "D=D+M \n"+
+                           "@13 \n"+
+                           "M=D \n"+
+                           "@SP \n"+
+                           "AM=M-1 \n"+
+                           "D=M \n"+
+                           "@13 \n"+
+                           "A=M \n"+
+                           "M=D \n";
+            break;
                 case "this":
                    result="@"+parts[2]+" \n"+
                            "D=A \n"+  //guardamos el dato en D
                            "@THIS \n"+
-                           "A=D+M \n"+ //sumamos el dato con lo que posee that y lo guardamos en A
-                           popStatements();
+                           "D=D+M \n"+
+                           "@13 \n"+
+                           "M=D \n"+
+                           "@SP \n"+
+                           "AM=M-1 \n"+
+                           "D=M \n"+
+                           "@13 \n"+
+                           "A=M \n"+
+                           "M=D \n";
                    break;
                 case "argument":
                    result="@"+parts[2]+" \n"+
                            "D=A \n"+  //guardamos el dato en D
                            "@ARG \n"+
-                           "A=D+M \n"+ //sumamos el dato con lo que posee ARG y lo guardamos en A
-                           popStatements();
+                           "D=D+M \n"+
+                           "@13 \n"+
+                           "M=D \n"+
+                           "@SP \n"+
+                           "AM=M-1 \n"+
+                           "D=M \n"+
+                           "@13 \n"+
+                           "A=M \n"+
+                           "M=D \n";
                    break;
                 case "local":
+                   try{
+                     temp = Integer.parseInt(parts[2]);
                    result="@"+parts[2]+" \n"+
                            "D=A \n"+  //guardamos el dato en D
                            "@LCL \n"+
                            "A=D+M \n"+ //sumamos el dato con lo que posee LCL y lo guardamos en A
                            popStatements();
+                   }catch(Exception e){
+                   result="@"+parts[2]+" \n"+
+                           "D=A \n"+  //guardamos el dato en D
+                           "@LCL \n"+
+                           "A=D+M \n"+ //sumamos el dato con lo que posee LCL y lo guardamos en A
+                           popStatements();
+                   }
                    break;
                 case "static":
-                   result= "@"+parts[2]+" \n"+ //obtenemos la nueva posición al que ira el dato pop
-                           popStatements(); //le hacemos pop
+                   result="@SP \n" +
+                           "AM=M-1 \n" +
+                           "D=M \n" +
+                           "@(16+n) \n" +
+                           "M=D";
+//                   }  
                    break;
                 default:
                    result ="ERROR EN POP MEMORY ACCESS";
@@ -371,4 +447,27 @@ public class translate
                  "A=M \n"+ //El dato que hay en m, se vuelve una dirección
                  "M=D"; //almacenamos en esa dirección
     }
+    
+    private String addInit(){
+         return "@256\n" +
+                  "D = A\n" +
+                  "@R0\n" +
+                  "M = D\n" +
+                  "@0\n" +
+                  "D = A\n" +
+                  "@R1\n" +
+                  "M = D\n" +
+                  "@0\n" +
+                  "D = A\n" +
+                  "@R2\n" +
+                  "M = D\n" +
+                  "@0\n" +
+                  "D = A\n" +
+                  "@R3\n" +
+                  "M = D\n" +
+                  "@0\n" +
+                  "D = A\n" +
+                  "@R4\n" +
+                  "M = D\n";
+      }
 }
