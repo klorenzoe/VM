@@ -124,9 +124,9 @@ public class translate
           result=
                   "@SP \n"+
                   "AM=M-1 \n"+
-                  "D=M \n"+
+                  "D=-M \n"+
                   "A=A-1 \n"+
-                  "M=M-D";
+                  "M=M+D";
        break;
        case "neg":
           result=
@@ -162,7 +162,7 @@ public class translate
                   "AM=M-1 \n"+
                   "D=M \n"+
                   "A=A-1 \n"+
-                  "MD=D-M \n"+
+                  "D=D-M \n"+
                   "@LABEL_TRUE"+n+" \n"+ 
                   "D;JEQ \n"+ //if true, it jumps and does not execute the following code
                   "@SP \n"+ //if false, executes the following code.
@@ -258,37 +258,37 @@ public class translate
                              pushStatements();
                    break;
                 case "this":
-                   result = "@THIS \n"
-                        + "D=M\n"
-                        + "@" + parts[2] +"\n"
-                        + "A=D+A\n"
-                        + "D=M\n"                      
+                      result = "@" +parts[2]+"\n"+ 
+                        "D = A \n"+
+                        "@THIS \n"+
+                        "A = D + M\n"+
+                        "D = M\n"                     
                         + pushStatements(); 
                    break;
                 case "that": 
-                   result = "@THAT \n"
-                        + "D=M\n"
-                        + "@" + parts[2] +"\n"
-                        + "A=D+A\n"
-                        + "D=M\n"                      
+                   result = "@" +parts[2]+"\n"+ 
+                        "D = A \n"+
+                        "@THAT \n"+
+                        "A = D + M\n"+
+                        "D = M\n"                     
                         + pushStatements(); 
                            
                    break;
                 case "argument": 
-                   result = "@ARG \n"
-                        + "D=M\n"
-                        + "@" + parts[2] +"\n"
-                        + "A=D+A\n"
-                        + "D=M\n"                      
+                   result = "@" +parts[2]+"\n"+ 
+                        "D = A \n"+
+                        "@ARG \n"+
+                        "A = D + M \n"+
+                        "D = M\n"                     
                         + pushStatements(); 
                            
                    break;
                 case "local":
-                   result = "@LCL \n"
-                        + "D=M\n"
-                        + "@" + parts[2] +"\n"
-                        + "A=D+A\n"
-                        + "D=M\n"                      
+                   result = "@" +parts[2]+"\n"+ 
+                        "D = A \n"+
+                        "@LCL \n"+
+                        "A = D + M\n"+
+                        "D = M\n"                     
                         + pushStatements(); 
                    break;
                 case "static":
@@ -328,7 +328,7 @@ public class translate
                               "AM = M - 1 \n" +
                               "D = M \n" +
                               "@"+var+" \n" +
-                              "A = M \n" +
+                             // "A = M \n" +
                               "M = D";
                    break;
                 case "that":
@@ -388,11 +388,6 @@ public class translate
                         + "M=D";   
                    break;
                 case "static":
-                   result="@SP \n" +
-                           "AM=M-1 \n" +
-                           "D=M \n" +
-                           "@(16+n) \n" +
-                           "M=D";
                    try{
                       int b = Integer.parseInt(parts[2]);
                       result="@SP \n" +
@@ -452,16 +447,87 @@ public class translate
           case "function":
              int arguments = Integer.parseInt(parts[2]);
              for (int i = 0; i < arguments; i++) {
-             result = "//function \n"
-                     +"@0 \n"+
-                        "D=A \n"+
-                        pushStatements();
+             result = "//function \n"+
+                     "@0\n"+
+				"D=A\n"+
+				"@SP\n"+
+				"A=M\n"+
+				"M=D\n"+
+				"@SP\n"+
+				"M=M+1";
+                     /*"("+parts[1]+")\n"+
+                     "@\n"+ Integer.toString(n)+"\n"+
+                     "D = A\n"+
+                     "@CONTINUE_"+parts[1]+"\n"+
+                     "D ; JMP\n"+
+                     "(DO_"+parts[1]+")\n"+
+                     "@LCL\n"+
+                     "A = M\n"+
+                     "M = 0\n"+
+                     "@LCL\n"+
+                     "M = M + 1\n"+
+                     "@DO_"+parts[1]+"\n"+
+                     "D ; JGT\n"+
+                     "(CONTINUE_"+parts[1]+")\n"+
+                     "@" +parts[2]+"\n"+
+                     "D = A\n"+
+                     "@SP\n"+
+                     "M = D + M";*/
               }
              break;
           case "call":
              String returnLabel = parts[1] +""+(n++);
-             result = "//call \n"+
-                     "@" + returnLabel+ " \n"+
+            result = "//call \n"+
+                    "@RETURN_"+parts[1]+""+n+"\n"+
+                "D = A\n"+
+                "@SP\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "M = M  + 1\n"+
+                "@LCL\n"+
+                "D = M\n"+
+                "@SP\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "M = M + 1\n"+
+                "@ARG\n"+
+                "D = M\n"+
+                "@SP\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "M = M + 1\n"+
+                "@THIS\n"+
+                "D = M\n"+
+                "@SP\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "M = M + 1\n"+
+                "@THAT\n"+
+                "D = M\n"+
+                "@SP\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "M = M + 1\n"+
+                "@SP\n"+
+                "D = M\n"+
+                "@" + (Integer.parseInt(parts[2])+5)+"\n"+
+                "D = D - A\n"+
+                "@ARG\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "D = M\n"+
+                "@LCL\n"+
+                "M = D\n"+
+                "@" + parts[1]+"\n"+
+                "0; JMP\n"+
+                "(RETURN_"+parts[1] + n + ")";
+                n++;
+                  /*   "@" + returnLabel+ " \n"+
                         "D=A \n"+
                         pushStatements()+" \n"+
                         "//save LCL \n"+
@@ -496,10 +562,10 @@ public class translate
                         "M=D \n"+
                         "@" + parts[1] + "\n"+
                         "0;JMP \n"+
-                     "("+returnLabel+")";
+                     "("+returnLabel+")";*/
              break;
           case "return":
-            /* result = "// return\n" +
+             result = "// return\n" +
                   "@LCL\n" +
                   "D = M\n" +
                   "@R13\n" +
@@ -543,7 +609,7 @@ public class translate
                   "@3\n" +
                   "D = A\n" +
                   "@R13\n" +
-                  "A = M - D\n" +//"A = M - D\n" +
+                  "A = D\n" +//"A = M - D\n" +
                   "D = M\n" +
                   "@ARG\n" +
                   "M = D\n" +
@@ -551,88 +617,67 @@ public class translate
                   "@4\n" +
                   "D = A\n" +
                   "@R13\n" +
-                  "A = M - D\n" +
+                  "A = D\n" +//"A = M - D\n" +
                   "D = M\n" +
                   "@LCL\n" +
                   "M = D\n" +
                   "//9\n" +
                   "@R14\n" +
                   "A = M\n" +
-                  "0; JMP";*/
+                  "0; JMP";
              
-               result = "// return\n"
-			+"// FRAME = LCL\n"
-			+"@LCL\n"
-			+"D=M\n"
-			+"@R13\n"
-			+"M=D\n"
-
-			+"// RET = *(FRAME-5)\n"
-			+"@R13\n"
-			+"D=M\n"
-			+"@5\n"
-			+"A=D-A\n"
-			+"D=M\n"
-			+"@R14\n"
-			+"M=D\n"
-
-			+"// *ARG = pop()\n"
-			+"@SP\n"
-			+"M=M-1\n"
-			+"A=M\n"
-			+"D=M\n"
-			+"@ARG\n"
-			+"A=M\n"
-			+"M=D\n"
-			
-			+"// SP = ARG + 1\n"
-			+"@ARG\n"
-			+"D=M\n"
-			+"@1\n"
-			+"D=D+A\n"
-			+"@SP\n"
-			+"M=D\n"
-
-			+"// THAT = *(FRAME-1)\n"
-			+"@R13\n"
-			+"D=M\n"
-			+"@1\n"
-			+"A=D-A\n"
-			+"D=M\n"
-			+"@THAT\n"
-			+"M=D\n"
-
-			+"// THIS = *(FRAME-2)\n"
-			+"@R13\n"
-			+"D=M\n"
-			+"@2\n"
-			+"A=D-A\n"
-			+"D=M\n"
-			+"@THIS\n"
-			+"M=D\n"
-
-			+"// ARG = *(FRAME-3)\n"
-			+"@R13\n"
-			+"D=M\n"
-			+"@3\n"
-			+"A=D-A\n"
-			+"D=M\n"
-			+"@ARG\n"
-			+"M=D\n"
-
-			+"// LCL = *(FRAME-4)\n"
-			+"@R13\n"
-			+"D=M\n"
-			+"@4\n"
-			+"A=D-A\n"
-			+"D=M\n"
-			+"@LCL\n"
-			+"M=D\n"
-
-			+"// goto RET\n"
-			+"@R14\n"
-			+"A=M\n"
-			+"0;JMP";
+           /*    result="@LCL\n"+
+                "D = M\n"+
+                "@R13\n"+
+                "M = D\n"+
+                "@5\n"+
+                "D = A\n"+
+                "@R13\n"+
+                "A = M - D\n"+
+                "D = M\n"+
+                "@R14\n"+
+                "M = D\n"+
+                "@SP\n"+
+                "A = M - 1\n"+
+                "D = M\n"+
+                "@ARG\n"+
+                "A = M\n"+
+                "M = D\n"+
+                "@ARG\n"+
+                "D = M + 1\n"+
+                "@SP\n"+
+                "M = D\n"+
+                "@1\n"+
+                "D = A\n"+
+                "@R13\n"+
+                "A = M - D\n"+
+                "D = M\n"+
+                "@THAT\n"+
+                "M = D\n"+
+                "@2\n"+
+                "D = A\n"+
+                "@R13\n"+
+                "A = M - D\n"+
+                "D = M\n"+
+                "@THIS\n"+
+                "M = D\n"+
+                "@3\n"+
+                "D = A\n"+
+                "@R13\n"+
+                "A = M - D\n"+
+                "D = M\n"+
+                "@ARG\n"+
+                "M = D\n"+
+                "@4\n"+
+                "D = A\n"+
+                "@R13\n"+
+                "A = M - D\n"+
+                "D = M\n"+
+                "@LCL\n"+
+                "M = D\n"+
+                "@R14\n"+
+                "A = M\n"+
+                "0 ; JMP";*/
              break;
        }
        return result;
@@ -648,7 +693,7 @@ public class translate
     }
     
     private String popStatements(){
-       return saveDataPopNewAddress()+"\n@SP \n"+
+       return saveDataPopNewAddress()+"\n @SP \n"+
                "A=M \n"+ //guardo la posición de SP en A
                "D=M \n"+ //D va a tomar el valor del dato en SP
                "@SP \n"+ 
