@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import jdk.nashorn.internal.objects.NativeArray;
 
 /**
  *
@@ -164,21 +165,24 @@ public class Interphase extends javax.swing.JFrame
          JFileChooser chooser = new JFileChooser();
          chooser.setFileFilter(new FileNameExtensionFilter("*.vm","vm"));
          chooser.setAcceptAllFileFilterUsed(false);
-
-         chooser.setCurrentDirectory(new java.io.File(".//..//..//archi_project//nand2tetris//projects//07"));
+         chooser.setMultiSelectionEnabled(true);
+         chooser.setCurrentDirectory(new java.io.File(".//..//..//archi_project//nand2tetris//projects//08"));
          chooser.showOpenDialog(chooser);
 
-         String path = chooser.getSelectedFile().getAbsolutePath();
-         fileName = path.replace("\\", "!").split("!")[path.replace("\\", "!").split("!").length-1];
+         File[] files = chooser.getSelectedFiles();
+         
+        // String path = chooser.getSelectedFile().getAbsolutePath();
+        // fileName = path.replace("\\", "!").split("!")[path.replace("\\", "!").split("!").length-1];
+         fileName = "result";
 
             //back-end
-            vmCode = new translate(path);
+            vmCode = new translate(files);
 
             //front-end
             txtVm.setText(vmCode.vmCodeContent);
 
-            txtHack.setText(vmCode.translateToHack().replace("\n\n", "\n"));
-
+            txtHack.setText(vmCode.translateToHack().replace("\n\n", "\n").replace("\\s+", ""));
+         
          }catch(Exception e)
          {
 
@@ -197,21 +201,16 @@ public class Interphase extends javax.swing.JFrame
          chooser.setDialogTitle("Choose a location to save this Hack");
          chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
          chooser.setAcceptAllFileFilterUsed(false);
-         String name = "\\"+fileName+".asm";
+         String name = "";
          //
          try
          {
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
             {
-               if((export = new File(chooser.getCurrentDirectory()+name)).exists())
-               {
-                  name = "\\"+fileName+"("+count+").asm";
-                  while((export = new File(chooser.getCurrentDirectory()+name)).exists())
-                  {
-                     count++;
-                     name = "\\"+fileName+"("+count+").asm";
-                  }
-               }
+               name = chooser.getSelectedFile().getAbsolutePath().toString().replace("\\", "!").split("!")[chooser.getSelectedFile().getAbsolutePath().toString().replace("\\", "!").split("!").length-1];
+               name = chooser.getSelectedFile().getAbsolutePath()+"\\"+name+".asm";
+               
+               export = new File(name);
                PrintWriter writer = new PrintWriter(export, "UTF-8");
                String[] lines = txtHack.getText().split("\n");
                for (int i = 0; i < lines.length; i++)
@@ -219,13 +218,16 @@ public class Interphase extends javax.swing.JFrame
                   writer.println(lines[i]);
                }
                writer.close();
+               //export.delete();
                JOptionPane.showMessageDialog(null,"¡Export success!");
             }
          }catch(Exception e)
          {
+            JOptionPane.showMessageDialog(null,e.toString());
          }
    }//GEN-LAST:event_btnExportActionPerformed
-   }// </editor-fold>                        
+   }
+// </editor-fold>                        
 
    /**
     * @param args the command line arguments
